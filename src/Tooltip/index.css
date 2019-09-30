@@ -1,0 +1,12 @@
+.tooltip {
+    line-height: 1.4;
+    color: #ffffff;
+    overflow-wrap: break-word;
+
+    padding: 6px 8px;
+    max-width: 250px;
+
+    border-radius: 2px;
+    background-color: rgba(0, 0, 0, 0.75);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
