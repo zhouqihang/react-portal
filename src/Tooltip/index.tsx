@@ -1,7 +1,7 @@
 /**
  * @file index.tsx
- * @author 周启航
- * @email zhouqh@jointwisdom.cn
+ * @author zhouqihang
+ * @email qihang_zhou@qq.com
  * @time 2019-09-29 16:48:11
  * @description Tooltip
  */
@@ -9,7 +9,6 @@ import React, { Component, CSSProperties, RefObject, createRef, ReactNode } from
 import Trigger, { TriggerType } from '../Trigger';
 import classnames from 'classnames';
 import './index.css'
-import { findDOMNode } from 'react-dom';
 import { GetPositionType } from '../Popup';
 
 /**
@@ -28,20 +27,55 @@ interface ITooltipProps {
     style?: CSSProperties;
     position?: PositionType;
     trigger?: TriggerType;
-    // TODO
     content?: ReactNode;
-    tooltipClassName?: string;
-    tooltipStyle?: CSSProperties;
     visible?: boolean;
     defaultVisible?: boolean;
+    onChange?: (visible: boolean) => void;
+    // TODO
+    tooltipClassName?: string;
+    tooltipStyle?: CSSProperties;
 }
-class Tooltip extends Component<ITooltipProps> {
+interface ITooltipState {
+    visible: boolean;
+}
+class Tooltip extends Component<ITooltipProps, ITooltipState> {
     static defaultProps: Partial<ITooltipProps> = {
         position: 'top',
         trigger: 'hover',
+        defaultVisible: false,
+    }
+
+    static getDerivedStateFromProps = (nextProps: Readonly<ITooltipProps>) => {
+        if ('visible' in nextProps) {
+            return {
+                visible: nextProps.visible
+            }
+        }
+        return null;
     }
 
     private triggerRef: RefObject<HTMLElement> = createRef<HTMLElement>();
+
+    constructor(props: ITooltipProps) {
+        super(props);
+        this.state = {
+            visible: this.props.defaultVisible as boolean,
+        }
+    }
+
+    handleTriggerVisible = (visible: boolean) => {
+        if ('visible' in this.props) {
+            if (!this.props.onChange) {
+                console.warn('Tooltip: onChange must be given when passed visible prop')
+            }
+            else {
+                this.props.onChange(visible);
+            }
+        }
+        else {
+            this.setState({ visible })
+        }
+    }
 
     getPopupPosition: GetPositionType = (containerEle) => {
         if (containerEle === null) {
@@ -126,7 +160,7 @@ class Tooltip extends Component<ITooltipProps> {
     }
 
     renderTooltip = () => {
-        const { className, style } = this.props;
+        const { className, style, content } = this.props;
         return (
             <div
                 className={classnames(
@@ -136,7 +170,7 @@ class Tooltip extends Component<ITooltipProps> {
                 style={style}
             >
                 <div className={prefix + '-content'}>
-                    this is a react tooltip component, this is a react tooltip component
+                    {content}
                 </div>
             </div>
         )
@@ -153,9 +187,16 @@ class Tooltip extends Component<ITooltipProps> {
     }
 
     render() {
-        const { children, trigger } = this.props;
+        const { trigger } = this.props;
+        const { visible } = this.state;
         return (
-            <Trigger trigger={trigger} popupContent={this.renderTooltip()} getPopupPosition={this.getPopupPosition} >
+            <Trigger
+                visible={visible}
+                trigger={trigger}
+                popupContent={this.renderTooltip()}
+                getPopupPosition={this.getPopupPosition}
+                onChange={this.handleTriggerVisible}
+            >
                 {this.renderTrigger()}
             </Trigger>
         )

@@ -1,7 +1,7 @@
 /**
  * @file index.tsx
- * @author 周启航
- * @email zhouqh@jointwisdom.cn
+ * @author zhouqihang
+ * @email qihang_zhou@qq.com
  * @time 2019-09-29 13:52:06
  * @description Trigger,弹出层组件最外层调用
  */
@@ -20,9 +20,10 @@ interface ITriggerProps {
     trigger?: TriggerType;
     popupContent?: React.ReactNode;
     getPopupPosition: GetPositionType;
-    // TODO
     visible?: boolean;
     defaultVisible?: boolean;
+    onChange?: (visible: boolean) => void;
+    // TODO
     popupClassName?: string;
     popupStyle?: CSSProperties;
 }
@@ -35,6 +36,15 @@ class Trigger extends Component<ITriggerProps, ITriggerStates> {
     static defaultProps: Partial<ITriggerProps> = {
         trigger: 'hover',
         defaultVisible: false
+    }
+
+    static getDerivedStateFromProps = (nextProps: Readonly<ITriggerProps>, prevState: ITriggerProps) => {
+        if ('visible' in nextProps) {
+            return {
+                visible: nextProps.visible
+            }
+        }
+        return null;
     }
 
     constructor(props: ITriggerProps) {
@@ -64,12 +74,13 @@ class Trigger extends Component<ITriggerProps, ITriggerStates> {
             (children as ReactElement).props[eventName](e);
         }
 
+        let v: boolean = !this.state.visible;
         if ('boolean' === typeof visible) {
-            this.togglePopupVisible(visible);
+            v = visible;
         }
-        else {
-            this.togglePopupVisible(!this.state.visible);
-        }
+        this.togglePopupVisible(v);
+
+        this.props.onChange && this.props.onChange(v)
     }
 
     /**
@@ -81,7 +92,6 @@ class Trigger extends Component<ITriggerProps, ITriggerStates> {
             return null;
         }
         const { popupContent, getPopupPosition } = this.props;
-        // const popupPosition = getPopupPosition();
         return (
             <Popup
                 key="popup"
@@ -105,13 +115,12 @@ class Trigger extends Component<ITriggerProps, ITriggerStates> {
             childrenProps.onClick = this.registerTriggerEvent('onClick');
         }
         else if ('focus' === trigger) {
-            childrenProps.onFocus = this.registerTriggerEvent('onFocus');
-            childrenProps.onBlur = this.registerTriggerEvent('onBlur');
-            // TODO onBlur
+            childrenProps.onFocus = this.registerTriggerEvent('onFocus', true);
+            childrenProps.onBlur = this.registerTriggerEvent('onBlur', false);
         }
         else if ('hover' === trigger) {
-            childrenProps.onMouseEnter = this.registerTriggerEvent('onMouseEnter');
-            childrenProps.onMouseLeave = this.registerTriggerEvent('onMouseLeave');
+            childrenProps.onMouseEnter = this.registerTriggerEvent('onMouseEnter', true);
+            childrenProps.onMouseLeave = this.registerTriggerEvent('onMouseLeave', false);
         }
 
         if (React.isValidElement(children)) {

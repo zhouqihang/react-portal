@@ -1,7 +1,7 @@
 /**
  * @file index.tsx
- * @author 周启航
- * @email zhouqh@jointwisdom.cn
+ * @author zhouqihang
+ * @email qihang_zhou@qq.com
  * @time 2019-09-29 15:34:10
  * @description Popup，用于渲染弹出层
  */
