@@ -5,8 +5,8 @@
  * @time 2019-09-29 16:48:11
  * @description Tooltip
  */
-import React, { Component, CSSProperties, RefObject, createRef } from 'react';
-import Trigger from '../Trigger';
+import React, { Component, CSSProperties, RefObject, createRef, ReactNode } from 'react';
+import Trigger, { TriggerType } from '../Trigger';
 import classnames from 'classnames';
 import './index.css'
 import { findDOMNode } from 'react-dom';
@@ -27,10 +27,18 @@ interface ITooltipProps {
     className?: string;
     style?: CSSProperties;
     position?: PositionType;
+    trigger?: TriggerType;
+    // TODO
+    content?: ReactNode;
+    tooltipClassName?: string;
+    tooltipStyle?: CSSProperties;
+    visible?: boolean;
+    defaultVisible?: boolean;
 }
 class Tooltip extends Component<ITooltipProps> {
     static defaultProps: Partial<ITooltipProps> = {
         position: 'top',
+        trigger: 'hover',
     }
 
     private triggerRef: RefObject<HTMLElement> = createRef<HTMLElement>();
@@ -145,9 +153,9 @@ class Tooltip extends Component<ITooltipProps> {
     }
 
     render() {
-        const { children } = this.props;
+        const { children, trigger } = this.props;
         return (
-            <Trigger trigger="hover" popupContent={this.renderTooltip()} getPopupPosition={this.getPopupPosition} >
+            <Trigger trigger={trigger} popupContent={this.renderTooltip()} getPopupPosition={this.getPopupPosition} >
                 {this.renderTrigger()}
             </Trigger>
         )

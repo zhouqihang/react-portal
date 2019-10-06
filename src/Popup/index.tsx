@@ -17,8 +17,9 @@ interface IPopupProps {
     className?: string;
     style?: CSSProperties;
     mask?: boolean;
-    maskCloseable?: boolean; // TODO
     getPosition?: GetPositionType;
+     // TODO
+    maskCloseable?: boolean;
 }
 class Popup extends Component<IPopupProps> {
     private containerEle: RefObject<HTMLDivElement> = createRef();

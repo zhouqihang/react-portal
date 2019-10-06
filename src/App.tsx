@@ -43,14 +43,14 @@ const App: React.FC = () => {
           </div>
         </div>
         <div className="tooltip-container-top">
-          <Tooltip position="bottom left">
-            <button role="button" onClick={ () => { console.log('111') } } >tooltip</button>
+          <Tooltip position="bottom left" trigger="click">
+            <button role="button" onClick={ () => { console.log('111') } } >click</button>
           </Tooltip>
-          <Tooltip position="bottom">
-            <button role="button" onClick={ () => { console.log('111') } } >tooltip</button>
+          <Tooltip position="bottom" trigger="focus">
+            <button role="button" onClick={ () => { console.log('111') } } >focus</button>
           </Tooltip>
           <Tooltip position="bottom right">
-            <button role="button" onClick={ () => { console.log('111') } } >tooltip</button>
+            <button role="button" onClick={ () => { console.log('111') } } >hover</button>
           </Tooltip>
         </div>
       </div>

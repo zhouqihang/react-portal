@@ -19,8 +19,12 @@ interface ITriggerProps {
     style?: CSSProperties;
     trigger?: TriggerType;
     popupContent?: React.ReactNode;
-    defaultVisible?: boolean;
     getPopupPosition: GetPositionType;
+    // TODO
+    visible?: boolean;
+    defaultVisible?: boolean;
+    popupClassName?: string;
+    popupStyle?: CSSProperties;
 }
 interface ITriggerStates {
     visible: boolean;
@@ -44,16 +48,28 @@ class Trigger extends Component<ITriggerProps, ITriggerStates> {
         this.setState({ visible })
     }
 
-    onClick = (e: ReactHTMLElement<any>) => {
+    /**
+     * register event for children element
+     * if they already has an event
+     * the func will be called
+     * 
+     * @param eventName register event name eg: onClick, onFocus...
+     * @param visible popup visible, if undefined, it will be opposite
+     * @return {function} react event function
+     */
+    registerTriggerEvent = (eventName: string, visible?: boolean) => (e: ReactHTMLElement<any>) => {
         const { children } = this.props;
 
-        // trigger element has regist click event,
-        if (children && (children as ReactElement).props.onClick) {
-            (children as ReactElement).props.onClick(e);
+        if (children && (children as ReactElement).props[eventName]) {
+            (children as ReactElement).props[eventName](e);
         }
 
-        // TODO handle popup visible
-        this.togglePopupVisible(!this.state.visible);
+        if ('boolean' === typeof visible) {
+            this.togglePopupVisible(visible);
+        }
+        else {
+            this.togglePopupVisible(!this.state.visible);
+        }
     }
 
     /**
@@ -78,22 +94,34 @@ class Trigger extends Component<ITriggerProps, ITriggerStates> {
 
     render() {
         // TODO 监测点击关闭的时候，判断事件触发链中是否包含popUp内容，如果不包括，则可以直接退出
-        const { className, style, children } = this.props;
+        const { className, style, children, trigger } = this.props;
 
         // get trigger element
-        let trigger = null;
+        let triggerEle = null;
+        const childrenProps: any = {
+            key: 'trigger'
+        };
+        if ('click' === trigger) {
+            childrenProps.onClick = this.registerTriggerEvent('onClick');
+        }
+        else if ('focus' === trigger) {
+            childrenProps.onFocus = this.registerTriggerEvent('onFocus');
+            childrenProps.onBlur = this.registerTriggerEvent('onBlur');
+            // TODO onBlur
+        }
+        else if ('hover' === trigger) {
+            childrenProps.onMouseEnter = this.registerTriggerEvent('onMouseEnter');
+            childrenProps.onMouseLeave = this.registerTriggerEvent('onMouseLeave');
+        }
+
         if (React.isValidElement(children)) {
-            trigger = React.cloneElement<any>(children, {
-                key: 'trigger',
-                // TODO 为元素挂载触发方法
-                onClick: this.onClick
-            });
+            triggerEle = React.cloneElement<any>(children, childrenProps);
         }
         
         // get popup content
         let popupContent = this.renderPopupContent();
 
-        return [trigger, popupContent];
+        return [triggerEle, popupContent];
     }
 }
 
