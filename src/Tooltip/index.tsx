@@ -10,8 +10,16 @@ import Trigger from '../Trigger';
 import classnames from 'classnames';
 import './index.css'
 import { findDOMNode } from 'react-dom';
+import { GetPositionType } from '../Popup';
 
+/**
+ * component classname prefix
+ */
 const prefix = 'tooltip';
+/**
+ * mini tooltip width
+ */
+const MIN_TOOLTIP_WIDTH = 35;
 
 const POSITIONS = ['top', 'top left', 'top right', 'right', 'right top', 'right bottom', 'bottom', 'bottom left', 'bottom right', 'left', 'left top', 'left bottom'];
 type PositionType = 'top' | 'top left' | 'top right' | 'right' | 'right top' | 'right bottom' | 'bottom' | 'bottom left' | 'bottom right' | 'left' | 'left top' | 'left bottom';
@@ -25,106 +33,87 @@ class Tooltip extends Component<ITooltipProps> {
         position: 'top',
     }
 
-    private tooltipRef: RefObject<HTMLDivElement> = createRef<HTMLDivElement>();
-
     private triggerRef: RefObject<HTMLElement> = createRef<HTMLElement>();
 
-    getTransform = (rect: DOMRect) => {
-        let [start, end = 'center'] = (this.props.position as string).split(' ');
-        let direction = '';
-        let offset = '';
-        switch (start) {
-            case 'bottom':
-            case 'top':
-                direction = 'X';
-                break;
-            default:
-                direction = '';
+    getPopupPosition: GetPositionType = (containerEle) => {
+        if (containerEle === null) {
+            return {};
         }
-        switch (end) {
-            case 'center':
-                offset = `calc(-50% + ${rect.width / 2}px)`;
-                break;
-            case 'left':
-                offset = '0px';
-                break;
-            case 'right':
-                offset = `calc(-100% + ${rect.width}px)`;
-                break;
-            default:
-                offset = '0';
-                break;
-        }
-        return `translate${direction}(${offset})`;
-    }
 
-    getPopupPosition = () => {
         const triggerEle = this.triggerRef.current;
         if (!triggerEle) {
             return {};
         }
+
         const rect = triggerEle.getBoundingClientRect() as DOMRect;
+        const bodyRect = document.body.getBoundingClientRect() as DOMRect;
         const position = this.props.position as PositionType;
         let style: CSSProperties = {};
 
         // compute position
+        const CONTAINER_W = containerEle.offsetWidth;
+        const CONTAINER_H = containerEle.offsetHeight;
+        const BODY_X = bodyRect.x;
+        const BODY_Y = bodyRect.y;
+        const BODY_W = document.body.offsetWidth;
+        const BODY_H = document.body.offsetHeight;
+        const TRIGGER_X = rect.x;
+        const TRIGGER_Y = rect.y;
+        const TRIGGER_W = rect.width;
+        const TRIGGER_H = rect.height;
         let [start, end = 'center'] = position.split(' ');
-        style.left = rect.left;
-        style.top = rect.top;
-        if (start === 'top') {
+
+        if ('left' === start && TRIGGER_X < CONTAINER_W) {
+            start = 'right';
+        }
+        else if ('right' === start && BODY_W - TRIGGER_X - TRIGGER_W < MIN_TOOLTIP_WIDTH) {
+            start = 'left';
+        }
+        else if ('top' === start && CONTAINER_H > TRIGGER_Y + Math.abs(BODY_Y)) {
+            start = 'bottom';
+        }
+        else if ('bottom' === start && BODY_H - TRIGGER_Y - Math.abs(BODY_Y) - TRIGGER_H < CONTAINER_H) {
+            start = 'top';
+        }
+
+        // top and bottom has diff 'top'
+        if ('top' === start || 'bottom' === start) {
+            style.top = 'top' === start ? TRIGGER_Y - CONTAINER_H : TRIGGER_Y + TRIGGER_H;
             switch (end) {
                 case 'center':
-                    style.transform = `translate(calc(-50% + ${rect.width / 2}px), -100%)`;
-                    break;
+                    style.left = TRIGGER_X - (CONTAINER_W - TRIGGER_W) / 2;
+                break;
                 case 'left':
-                    style.transform = `translate(0, -100%)`;
-                    break;
+                    style.left = TRIGGER_X;
+                break;
                 case 'right':
-                    style.transform = `translate(calc(-100% + ${rect.width}px), -100%)`;
-                    break;
+                    style.left = TRIGGER_X - CONTAINER_W + TRIGGER_W;
+                break;
             }
         }
-        else if (start === 'bottom') {
+        // left and bottom has diff 'left'
+        else if ('left' === start || 'right' === start) {
+            style.left = 'left' === start ? TRIGGER_X - CONTAINER_W : TRIGGER_X + TRIGGER_W;
             switch (end) {
                 case 'center':
-                    style.transform = `translate(calc(-50% + ${rect.width / 2}px), ${rect.height}px)`;
-                    break;
-                case 'left':
-                    style.transform = `translate(0, ${rect.height}px)`;
-                    break;
-                case 'right':
-                    style.transform = `translate(calc(-100% + ${rect.width}px), ${rect.height}px)`;
-                    break;
-            }
-        }
-        else if (start === 'left') {
-            switch (end) {
-                case 'center':
-                    style.transform = `translate(-100%, calc(-50% + ${rect.height / 2}px))`;
-                    break;
+                    style.top = TRIGGER_Y - (CONTAINER_H - TRIGGER_H) / 2;
+                break;
                 case 'top':
-                    style.transform = `translate(-100%, 0)`;
-                    break;
+                    style.top = TRIGGER_Y;
+                break;
                 case 'bottom':
-                    style.transform = `translate(-100%, calc(-100% + ${rect.height}px))`;
-                    break;
+                    style.top = TRIGGER_Y - CONTAINER_H + TRIGGER_H;
+                break;
             }
         }
-        else if (start === 'right') {
-            switch (end) {
-                case 'center':
-                    style.transform = `translate(${rect.width}px, calc(-50% + ${rect.height / 2}px))`;
-                    break;
-                case 'top':
-                    style.transform = `translate(${rect.width}px, 0)`;
-                    break;
-                case 'bottom':
-                    style.transform = `translate(${rect.width}px, calc(-100% + ${rect.height}px))`;
-                    break;
-            }
+        // compute offset with body
+        if (style.left) {
+            style.left = (style.left as number) - BODY_X;
         }
-        console.log('--', rect, style);
-        // TODO compute width and height
+        if (style.top) {
+            style.top = (style.top as number) - BODY_Y;
+        }
+
         return style;
     }
 
@@ -137,9 +126,10 @@ class Tooltip extends Component<ITooltipProps> {
                     className
                 )}
                 style={style}
-                ref={this.tooltipRef}
             >
-                aasdfgasgasdaasdfgasgasdaasdfgasgasdaasdfgasgasd
+                <div className={prefix + '-content'}>
+                    this is a react tooltip component, this is a react tooltip component
+                </div>
             </div>
         )
     }
@@ -147,7 +137,7 @@ class Tooltip extends Component<ITooltipProps> {
     renderTrigger = () => {
         const { children } = this.props;
         if (React.isValidElement(children)) {
-            return React.cloneElement(children, {
+            return React.cloneElement<any>(children, {
                 ref: this.triggerRef
             })
         }

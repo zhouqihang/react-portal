@@ -7,7 +7,7 @@
  */
 import React, { Component, CSSProperties, ReactHTMLElement, ReactElement, RefObject } from 'react';
 import classnames from 'classnames';
-import Popup from '../Popup';
+import Popup, { GetPositionType } from '../Popup';
 
 const prefix = 'trigger';
 const TRIGGERS_ARR = ['click', 'focus', 'hover'];
@@ -20,7 +20,7 @@ interface ITriggerProps {
     trigger?: TriggerType;
     popupContent?: React.ReactNode;
     defaultVisible?: boolean;
-    getPopupPosition: () => CSSProperties;
+    getPopupPosition: GetPositionType;
 }
 interface ITriggerStates {
     visible: boolean;
@@ -65,11 +65,11 @@ class Trigger extends Component<ITriggerProps, ITriggerStates> {
             return null;
         }
         const { popupContent, getPopupPosition } = this.props;
-        const popupPosition = getPopupPosition();
+        // const popupPosition = getPopupPosition();
         return (
             <Popup
                 key="popup"
-                style={popupPosition}
+                getPosition={getPopupPosition}
             >
                 {popupContent}
             </Popup>
@@ -83,7 +83,7 @@ class Trigger extends Component<ITriggerProps, ITriggerStates> {
         // get trigger element
         let trigger = null;
         if (React.isValidElement(children)) {
-            trigger = React.cloneElement(children, {
+            trigger = React.cloneElement<any>(children, {
                 key: 'trigger',
                 // TODO 为元素挂载触发方法
                 onClick: this.onClick

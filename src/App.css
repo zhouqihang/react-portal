@@ -1,22 +1,25 @@
 .App {
-  text-align: center;
+
+}
+.tooltip-container {
+    
+}
+.tooltip-container-top {
+    display: flex;
+    justify-content: center;
+}
+.tooltip-container-top button {
+  margin: 0 20px;
 }
 
-.App-logo {
-  height: 40vmin;
+.tooltip-container-center {
+  display: flex;
+  justify-content: space-between;
 }
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.tooltip-container-center-left {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
 }
-
-.App-link {
-  color: #09d3ac;
+.tooltip-container-center-left button {
+  margin: 20px 0;
 }
