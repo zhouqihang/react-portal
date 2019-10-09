@@ -23,15 +23,12 @@ const MIN_TOOLTIP_WIDTH = 35;
 const POSITIONS = ['top', 'top left', 'top right', 'right', 'right top', 'right bottom', 'bottom', 'bottom left', 'bottom right', 'left', 'left top', 'left bottom'];
 type PositionType = 'top' | 'top left' | 'top right' | 'right' | 'right top' | 'right bottom' | 'bottom' | 'bottom left' | 'bottom right' | 'left' | 'left top' | 'left bottom';
 interface ITooltipProps {
-    className?: string;
-    style?: CSSProperties;
     position?: PositionType;
     trigger?: TriggerType;
     content?: ReactNode;
     visible?: boolean;
     defaultVisible?: boolean;
     onChange?: (visible: boolean) => void;
-    // TODO
     tooltipClassName?: string;
     tooltipStyle?: CSSProperties;
 }
@@ -160,14 +157,14 @@ class Tooltip extends Component<ITooltipProps, ITooltipState> {
     }
 
     renderTooltip = () => {
-        const { className, style, content } = this.props;
+        const { tooltipClassName, tooltipStyle, content } = this.props;
         return (
             <div
                 className={classnames(
                     prefix,
-                    className
+                    tooltipClassName
                 )}
-                style={style}
+                style={tooltipStyle}
             >
                 <div className={prefix + '-content'}>
                     {content}
