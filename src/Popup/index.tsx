@@ -9,13 +9,12 @@ import React, { Component, CSSProperties, RefObject, createRef } from 'react';
 import classnames from 'classnames';
 import Portal from '../Portal';
 import './index.css'
-import { findDOMNode } from 'react-dom';
 
 const prefix = 'popup';
 export type GetPositionType = (containerEle: HTMLDivElement | null) => CSSProperties;
 interface IPopupProps {
-    className?: string;
-    style?: CSSProperties;
+    maskClassName?: string;
+    maskStyle?: CSSProperties;
     mask?: boolean;
     getPosition?: GetPositionType;
      // TODO
@@ -35,18 +34,15 @@ class Popup extends Component<IPopupProps> {
     }
 
     render() {
-        const { className, style, children, mask } = this.props;
+        const { maskClassName, maskStyle, children, mask } = this.props;
         const { computedStyle } = this.state;
         return (
             <Portal>
                 <div
-                    className={classnames(
-                        prefix,
-                        className
-                    )}
+                    className={prefix}
                 >
-                    {mask && <div className={prefix + '-mask'} />}
-                    <div style={Object.assign({}, style, computedStyle)} className={prefix + '-container'} ref={this.containerEle}>{children}</div>
+                    {mask && <div className={classnames(prefix + '-mask', maskClassName)} style={maskStyle} />}
+                    <div style={Object.assign({}, computedStyle)} className={prefix + '-container'} ref={this.containerEle}>{children}</div>
                 </div>
             </Portal>
         )
